@@ -25,4 +25,8 @@ nothing fancy, just an overview.
 It subscribes '#', means any topic and keep listening for changes and new topics, while in parallel feeding to received topics in the treeview of an very basic TKinter Application.
 It doesn't "forget" any Topics while running, which makes it useful to monitor, whats there only temporary.
 
-Feedback, Issues, Suggestions, Improvements, Forks all welcome. Use the Issue tracker here to get in contact. 
+Feedback, Issues, Suggestions, Improvements, Forks all welcome. Use the Issue tracker here to get in contact.
+
+##### Hidden Features ;-)
+
+If the window is closed, it writes the actual tree content to stdout. Not sure if it is useful for someone. 
