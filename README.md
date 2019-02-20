@@ -16,4 +16,6 @@ Change the line `self.connect("haus.wupp", 1883, 60)` in file `mqtt_client.py` t
 `python mqtt_tree.py` should do the job.
 
 ### How it looks like
-...
+![mqtt_tree](https://user-images.githubusercontent.com/6035034/53057173-831a3f00-34ae-11e9-8a76-a66edc996c21.png)
+
+nothing fancy, just an overview. 
