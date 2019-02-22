@@ -47,5 +47,6 @@ class Mqtt_Client(mqtt.Client):
     def run(self):
         self.connect("haus.wupp", 1883, 60)
         self.subscribe("#", 0)
+        self.subscribe("$SYS/#", 0)
 
         self.loop_start()

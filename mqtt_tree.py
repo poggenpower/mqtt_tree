@@ -61,7 +61,7 @@ def read_mqtt_q(q, mqtt_root, app):
                             parent.tree_id,
                             "end", None,
                             text=element,
-                            values=(msg.qos, msg.payload)
+                            values=(msg.qos, msg.retain, msg.payload)
                         )
                     else:
                         id = app.tree_insert(parent.tree_id, "end", None, text=element)
@@ -71,7 +71,7 @@ def read_mqtt_q(q, mqtt_root, app):
                 child = parent.get_child(element)
                 # Update child, if a TYPE_LEAF
                 if i >= len(mqtt_path_split):
-                    app.item_update(child.tree_id, (msg.qos, msg.payload))
+                    app.item_update(child.tree_id, (msg.qos, msg.retain, msg.payload))
                 # print("My Parent is {} and has this childs: {}"
                 #       .format(parent.name, ", ".join(map(str,parent.get_children()))))
             parent = child

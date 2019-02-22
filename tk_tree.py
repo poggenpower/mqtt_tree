@@ -18,12 +18,14 @@ class TK_Tree():
         self.tree = ttk.Treeview(frame)
         self.tree.grid(row=0, column=0, sticky=tkinter.W+tkinter.E+tkinter.S+tkinter.N)
 
-        self.tree["columns"] = ( "one", "two")
+        self.tree["columns"] = ( "qos","retain", "two")
         self.tree.column("#0", minwidth=300)
-        self.tree.column("one", width=10)
+        self.tree.column("qos", width=10)
+        self.tree.column("retain", width=10)
         self.tree.column("two", minwidth=10000, stretch=True)
         self.tree.heading("#0", text="Topic")
-        self.tree.heading("one", text="QOS")
+        self.tree.heading("qos", text="QOS")
+        self.tree.heading("retain", text="Retain")
         self.tree.heading("two", text="Payload")
 
         ysb = ttk.Scrollbar(frame, orient='vertical', command=self.tree.yview)
@@ -39,10 +41,6 @@ class TK_Tree():
                                      text="QUIT", fg="red",
                                      command=frame.quit)
         self.button.pack(side=tkinter.LEFT)
-        self.slogan = tkinter.Button(btn_frame,
-                                     text="Hello",
-                                     command=self.write_slogan)
-        self.slogan.pack(side=tkinter.LEFT)
 
         self.root.columnconfigure(0, weight=1)
         self.root.rowconfigure(0, weight=1)
