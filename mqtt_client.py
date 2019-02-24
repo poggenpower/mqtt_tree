@@ -28,6 +28,14 @@ class Mqtt_Client(mqtt.Client):
     def on_connect(self, mqttc, obj, flags, rc):
         logger.info("rc: "+str(rc))
 
+    def on_disconnect(self, userdata, rc):
+        if rc != 0:
+            logger.error("Mqtt_Client: Disconnected unexpected.")
+            try:
+                self.reconnect()
+            except TimeoutError as te:
+                logger.exception("Mqtt_Client: Reconnect failed.")
+
     def on_message(self, mqttc, obj, msg):
         #logger.info(msg.topic+" "+str(msg.qos)+" "+str(msg.payload))
         self._queue.put(msg)
