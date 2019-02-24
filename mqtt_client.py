@@ -18,35 +18,35 @@
 
 import paho.mqtt.client as mqtt
 from queue import Queue
-
+import logging
+logger = logging.getLogger(__name__)
 
 class Mqtt_Client(mqtt.Client):
 
     _queue = Queue()
 
     def on_connect(self, mqttc, obj, flags, rc):
-        print("rc: "+str(rc))
+        logger.info("rc: "+str(rc))
 
     def on_message(self, mqttc, obj, msg):
-        #print(msg.topic+" "+str(msg.qos)+" "+str(msg.payload))
+        #logger.info(msg.topic+" "+str(msg.qos)+" "+str(msg.payload))
         self._queue.put(msg)
 
     def on_publish(self, mqttc, obj, mid):
-        print("mid: "+str(mid))
+        logger.info("mid: "+str(mid))
 
     def on_subscribe(self, mqttc, obj, mid, granted_qos):
-        print("Subscribed: "+str(mid)+" "+str(granted_qos))
+        logger.info("Subscribed: "+str(mid)+" "+str(granted_qos))
 
     def on_log(self, mqttc, obj, level, string):
-        # print("Log: " + string)
+        # logger.info("Log: " + string)
         pass
 
     def get_queue(self):
         return self._queue
 
-    def run(self):
+    def run(self, *topics):
         self.connect("haus.wupp", 1883, 60)
-        self.subscribe("#", 0)
-        self.subscribe("$SYS/#", 0)
-
+        for topic in topics:
+            self.subscribe(topic, 0)
         self.loop_start()
