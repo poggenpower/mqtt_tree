@@ -25,6 +25,18 @@ class Mqtt_Client(mqtt.Client):
 
     _queue = Queue()
 
+    def configure(self, hostname, port, timeout=60, sslcontext=None):
+        """ create an ssl context like this:
+        import ssl
+        context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+        context.load_cert_chain(certfile="../code2/codeschloss.home.schmu.net.crt", keyfile="../code2/codeschloss.home.schmu.net.key.pem")
+        (password=XXX) givs pw for keyfiles. Key can be in the CA file, but first.
+        """
+        self.hostname = hostname
+        self.port = port
+        self.timeout = timeout
+        self.sslcontext = sslcontext
+
     def on_connect(self, mqttc, obj, flags, rc):
         logger.info("rc: "+str(rc))
 
@@ -54,7 +66,11 @@ class Mqtt_Client(mqtt.Client):
         return self._queue
 
     def run(self, *topics):
-        self.connect("haus.wupp", 1883, 60)
+        if not self.hostname:
+            raise AttributeError("Hostname and Port need to be configurted. all .configure()")
+        if self.sslcontext:
+            self.tls_set_context(self.sslcontext)
+        self.connect(self.hostname, self.port, self.timeout)
         for topic in topics:
             self.subscribe(topic, 0)
         self.loop_start()

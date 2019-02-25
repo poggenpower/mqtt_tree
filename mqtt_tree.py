@@ -2,6 +2,7 @@ import mqtt_client
 import time
 import tk_tree
 import threading
+import ssl
 
 
 class mqtt_path_element():
@@ -83,9 +84,18 @@ def print_topics(root, level):
         print_topics(child, level + 1)
 
 
-mc = mqtt_client.Mqtt_Client()
+sslcontext = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+sslcontext.load_cert_chain(
+    certfile="../code2/codeschloss.home.schmu.net.crt",
+    keyfile="../code2/codeschloss.home.schmu.net.key.pem",
+    password="********",
+)
+# (password=XXX) givs pw for keyfiles. Key can be in the CA file, but first.
+
+mc = mqtt_client.Mqtt_Client("mqtt_tree")
+mc.configure("127.0.0.1", 8883, sslcontext=sslcontext)
 q = mc.get_queue()
-mc.run()
+mc.run('#')
 
 app = tk_tree.TK_Tree()
 

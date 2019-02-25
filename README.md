@@ -10,7 +10,7 @@ As I didn't found a light wight way to keep an overview of all topic published f
 
 ## Setup
 as this is in a really early stage setup is a little bit rough.
-Change the line `self.connect("haus.wupp", 1883, 60)` in file `mqtt_client.py` to your needs. For option check the paho documentation.
+change the lines near the end of mqtt_client.py to your needs. If you are not using TLS, don't set the ssl context. 
 
 ## Run
 `python mqtt_tree.py` should do the job.
@@ -29,4 +29,4 @@ Feedback, Issues, Suggestions, Improvements, Forks all welcome. Use the Issue tr
 
 ##### Hidden Features ;-)
 
-If the window is closed, it writes the actual tree content to stdout. Not sure if it is useful for someone. 
+If the window is closed, it writes the actual tree content to stdout. Not sure if it is useful for someone.
