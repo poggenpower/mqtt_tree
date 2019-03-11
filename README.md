@@ -2,6 +2,11 @@
 
 As I didn't found a light wight way to keep an overview of all topic published from various devices I wrote a small python UI.
 
+## change log
+2019-03-11 config via config.py
+2019-02-28 ssl client certificate support
+2019-02-15 initial version
+
 ## Installation
 * install the paho-mqtt module e.g. via pip:
   * `pip install paho-mqtt`
@@ -9,8 +14,8 @@ As I didn't found a light wight way to keep an overview of all topic published f
   * `git clone ....`
 
 ## Setup
-as this is in a really early stage setup is a little bit rough.
-change the lines near the end of mqtt_client.py to your needs. If you are not using TLS, don't set the ssl context. 
+copy config.py.example to config.py
+and change for your needs.
 
 ## Run
 `python mqtt_tree.py` should do the job.
@@ -26,6 +31,10 @@ It subscribes '#', means any topic and keep listening for changes and new topics
 It doesn't "forget" any Topics while running, which makes it useful to monitor, whats there only temporary.
 
 Feedback, Issues, Suggestions, Improvements, Forks all welcome. Use the Issue tracker here to get in contact.
+
+## Todo / Know Issues
+* allow ssl without client certificate
+* grey out non retaining topics after a while. 
 
 ##### Hidden Features ;-)
 

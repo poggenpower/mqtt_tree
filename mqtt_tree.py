@@ -3,6 +3,11 @@ import time
 import tk_tree
 import threading
 import ssl
+import sys
+import logging
+logger = logging.getLogger(__name__)
+
+from config import conf
 
 
 class mqtt_path_element():
@@ -43,6 +48,7 @@ class mqtt_path_element():
 
 def read_mqtt_q(q, mqtt_root, app):
     while True:
+        print("read_mqtt_q: wainting for new message")
         msg = q.get()
         if isinstance(msg, bool):
             break
@@ -84,16 +90,22 @@ def print_topics(root, level):
         print_topics(child, level + 1)
 
 
-sslcontext = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-sslcontext.load_cert_chain(
-    certfile="../code2/codeschloss.home.schmu.net.crt",
-    keyfile="../code2/codeschloss.home.schmu.net.key.pem",
-    password="********",
-)
+handler = logging.StreamHandler(sys.stdout)
+logging.basicConfig(handlers=[handler, ], level=logging.DEBUG, format='%(asctime)s %(message)s')
+logger = logging.getLogger()
+
+sslcontext = None
+if conf.get('ssl'):
+    sslcontext = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+    sslcontext.load_cert_chain(
+        certfile=conf.get('certfile'),
+        keyfile=conf.get('keyfile'),
+        password=conf.get('password'),
+    )
 # (password=XXX) givs pw for keyfiles. Key can be in the CA file, but first.
 
 mc = mqtt_client.Mqtt_Client("mqtt_tree")
-mc.configure("127.0.0.1", 8883, sslcontext=sslcontext)
+mc.configure(conf.get('mqtt_server'), conf.get('mqtt_port'), sslcontext=sslcontext)
 q = mc.get_queue()
 mc.run('#')
 

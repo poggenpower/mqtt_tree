@@ -1,0 +1,12 @@
+# change to your needs
+conf = dict()
+conf['mqtt_server'] = "127.0.0.1"
+conf['mqtt_port'] = 8883
+# enable SSL, it creates a sslcontext, see python documentation for details
+conf['ssl'] = True
+# set to specify client certificate
+conf['certfile'] = "public.crt"
+# Keyfile if not included in certfile (must be the first)
+conf['keyfile'] = "private.pem"
+# for the private key, if set.
+conf['password'] = "******"
