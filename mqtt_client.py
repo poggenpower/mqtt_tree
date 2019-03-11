@@ -38,6 +38,8 @@ class Mqtt_Client(mqtt.Client):
         self.sslcontext = sslcontext
 
     def on_connect(self, mqttc, obj, flags, rc):
+        for topic in self.topics:
+            self.subscribe(topic, 0)
         logger.info("rc: "+str(rc))
 
     def on_disconnect(self, userdata, rc):
@@ -71,6 +73,5 @@ class Mqtt_Client(mqtt.Client):
         if self.sslcontext:
             self.tls_set_context(self.sslcontext)
         self.connect(self.hostname, self.port, self.timeout)
-        for topic in topics:
-            self.subscribe(topic, 0)
+        self.topics = topics
         self.loop_start()
