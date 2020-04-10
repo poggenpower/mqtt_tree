@@ -49,13 +49,16 @@ class Mqtt_Client(mqtt.Client):
         logger.info("rc: "+str(rc))
 
     def on_disconnect(self, mqttc, userdata, rc):
-        self.connected = False
         if rc != 0:
-            logger.error("Mqtt_Client: Disconnected unexpected.")
-            try:
-                self.reconnect()
-            except TimeoutError as te:
-                logger.exception("Mqtt_Client: Reconnect failed.")
+            logger.error("Mqtt_Client: Disconnected unexpected. Return Code: {}".format(rc))
+            # Reconnect should be triggerd automatically from the main loop
+            # try:
+            #     # TODO: reconnect also issues an on_disconnect event, if not succesful. This code is stacking up here.
+            #     self.reconnect()
+            # except TimeoutError as te:
+            #     logger.exception("Mqtt_Client: Reconnect failed.")
+            self._queue.put({'error_message': 'MQTT Server disconnected unexpected.'})
+        self.connected = False
 
     def on_message(self, mqttc, obj, msg):
         #logger.info(msg.topic+" "+str(msg.qos)+" "+str(msg.payload))
