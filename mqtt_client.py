@@ -67,7 +67,7 @@ class Mqtt_Client(mqtt.Client):
     def publish(self, topic, payload=None, qos=0, retain=False):
         if not self.connected:
             logger.warning("publish: Not connected to MQTT Server.")
-        return = super().publish(topic=topic, payload=payload, qos=qos, retain=retain)
+        return super().publish(topic=topic, payload=payload, qos=qos, retain=retain)
 
     def on_subscribe(self, mqttc, obj, mid, granted_qos):
         logger.info("Subscribed: "+str(mid)+" "+str(granted_qos))
