@@ -46,7 +46,8 @@ class Mqtt_Client(mqtt.Client):
         for topic in self.topics:
             self.subscribe(topic, 0)
         self.connected = True
-        logger.info("rc: "+str(rc))
+        logger.debug("Connect Rectrun Code: "+str(rc))
+        self._queue.put({'status_message': 'MQTT Server connected.'})
 
     def on_disconnect(self, mqttc, userdata, rc):
         if rc != 0:
