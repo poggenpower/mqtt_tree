@@ -1,7 +1,7 @@
 """
 mqtt_client
 
-impementation of local needs.
+implementation of local needs.
 
 """
 
@@ -70,7 +70,7 @@ class Mqtt_Client(mqtt.Client):
         context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
         context.load_cert_chain(certfile="../code2/codeschloss.home.schmu.net.crt",
             keyfile="../code2/codeschloss.home.schmu.net.key.pem")
-        (password=XXX) givs pw for keyfiles. Key can be in the CA file, but first.
+        (password=XXX) gives pw for keyfiles. Key can be in the CA file, but first.
         """
         # pylint: disable=attribute-defined-outside-init
         self.hostname = hostname
@@ -103,7 +103,7 @@ class Mqtt_Client(mqtt.Client):
 
     def private_publish(self, topic, payload=None, qos=0, retain=False):
         """
-        Queue messge internally without distribute to MQTT.
+        Queue message internally without distribute to MQTT.
         """
         msg = MQTTMessage(topic=topic)
         msg.payload = payload
@@ -138,7 +138,7 @@ class Mqtt_Client(mqtt.Client):
         logger.debug("run")
         if not self.hostname:
             logger.error("Hostname and Port missing, can't start")
-            raise AttributeError("Hostname and Port need to be configurted. all .configure()")
+            raise AttributeError("Hostname and Port need to be configured. all .configure()")
         if self.sslcontext and self._ssl_context is None:
             self.tls_set_context(self.sslcontext)
         self.connect(self.hostname, self.port, self.timeout)

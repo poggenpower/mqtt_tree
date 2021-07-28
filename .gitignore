@@ -3,3 +3,4 @@ venv
 dirbrowser.py
 config.py
 *.pyc
+.DS_Store
