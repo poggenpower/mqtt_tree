@@ -105,8 +105,8 @@ class Mqtt_Client(mqtt.Client):
         """
         Queue message internally without distribute to MQTT.
         """
-        msg = MQTTMessage(topic=topic)
-        msg.payload = payload
+        msg = MQTTMessage(topic=topic.encode())
+        msg.payload = payload.encode()
         msg.qos = qos
         msg.retain = retain
         self._queue.put(msg)
@@ -122,7 +122,7 @@ class Mqtt_Client(mqtt.Client):
         pass
 
     def __cb_on_log(self, mqttc, obj, level, string):
-        logger.info(f"Log: {string}")
+        logger.debug(f"Log: {string}")
 
     def get_queue(self):
         """
