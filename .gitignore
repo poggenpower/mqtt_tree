@@ -4,3 +4,5 @@ dirbrowser.py
 config.py
 *.pyc
 .DS_Store
+dist/**
+mqtt_client.egg-info/**
