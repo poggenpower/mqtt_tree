@@ -1,3 +1,4 @@
+import os
 from  . import mqtt_client
 from . import tk_tree
 import threading
@@ -91,7 +92,8 @@ def main():
     logger = logging.getLogger()
 
     try:
-      import config
+        sys.path.append(os.getcwd())
+        import config
     except ImportError:
         logger.error("You need to place a 'config.py' in the current directory. With a config similar to 'config.py.example'.")
         sys.exit(1)
