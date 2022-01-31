@@ -1,14 +1,10 @@
-import mqtt_client
-import time
-import tk_tree
+from  . import mqtt_client
+from . import tk_tree
 import threading
 import ssl
 import sys
 import logging
 logger = logging.getLogger(__name__)
-
-from config import conf
-
 
 class mqtt_path_element():
     TYPE_BRANCH = 1
@@ -89,40 +85,50 @@ def print_topics(root, level):
         print('  ' * level + child.name)
         print_topics(child, level + 1)
 
+def main():
+    handler = logging.StreamHandler(sys.stdout)
+    logging.basicConfig(handlers=[handler, ], level=logging.DEBUG, format='%(asctime)s %(message)s')
+    logger = logging.getLogger()
 
-handler = logging.StreamHandler(sys.stdout)
-logging.basicConfig(handlers=[handler, ], level=logging.DEBUG, format='%(asctime)s %(message)s')
-logger = logging.getLogger()
+    try:
+      import config
+    except ImportError:
+        logger.error("You need to place a 'config.py' in the current directory. With a config similar to 'config.py.example'.")
+        sys.exit(1)
+    conf = config.conf
 
-sslcontext = None
-if conf.get('ssl'):
-    sslcontext = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-    sslcontext.load_cert_chain(
-        certfile=conf.get('certfile'),
-        keyfile=conf.get('keyfile'),
-        password=conf.get('password'),
-    )
-# (password=XXX) givs pw for keyfiles. Key can be in the CA file, but first.
+    sslcontext = None
+    if conf.get('ssl'):
+        sslcontext = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+        sslcontext.load_cert_chain(
+            certfile=conf.get('certfile', ''),
+            keyfile=conf.get('keyfile'),
+            password=conf.get('password'),
+        )
+    # (password=XXX) givs pw for keyfiles. Key can be in the CA file, but first.
 
-mc = mqtt_client.Mqtt_Client("mqtt_tree")
-mc.configure(conf.get('mqtt_server'), conf.get('mqtt_port'), sslcontext=sslcontext)
-q = mc.get_queue()
-mc.run('#')
+    mc = mqtt_client.Mqtt_Client("mqtt_tree")
+    mc.configure(conf.get('mqtt_server'), conf.get('mqtt_port'), sslcontext=sslcontext)
+    q = mc.get_queue()
+    mc.run('#')
 
-app = tk_tree.TK_Tree()
+    app = tk_tree.TK_Tree()
 
-print("Queuesize: {}".format(q.qsize()))
-mqtt_root = mqtt_path_element('root')
-print('Root Element created')
-# read_mqtt_q(q, mqtt_root, app)
-receive_thread = threading.Thread(target=read_mqtt_q, args=(q, mqtt_root, app))
-print('Starting MQTT event processing in the background')
-receive_thread.start()
+    print("Queuesize: {}".format(q.qsize()))
+    mqtt_root = mqtt_path_element('root')
+    print('Root Element created')
+    # read_mqtt_q(q, mqtt_root, app)
+    receive_thread = threading.Thread(target=read_mqtt_q, args=(q, mqtt_root, app))
+    print('Starting MQTT event processing in the background')
+    receive_thread.start()
 
-app.run()
+    app.run()
 
-mc.loop_stop()
-q.put(False)  # Stop Threat
-print_topics(mqtt_root, 1)
+    mc.loop_stop()
+    q.put(False)  # Stop Threat
+    print_topics(mqtt_root, 1)
 
-print('########################################################################')
+    print('########################################################################')
+
+if __name__ == "__main__":
+    main()
