@@ -6,3 +6,4 @@ config.py
 .DS_Store
 dist/**
 mqtt_client.egg-info/**
+*.pem

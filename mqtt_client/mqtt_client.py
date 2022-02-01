@@ -25,10 +25,19 @@ implementation of local needs.
 
 from queue import Queue
 import logging
+from dataclasses import dataclass
+from typing import Union
 import paho.mqtt.client as mqtt
 from paho.mqtt.client import MQTTMessage
 
 logger = logging.getLogger(__name__)
+
+@dataclass
+class SubscriptionAtrributes():
+    topic: Union[str, list[str]] = ""
+    qos: int = 0
+    options: Union[None, mqtt.SubscribeOptions] = None
+    properties: Union[None, mqtt.Properties] = None
 
 # pylint: disable=invalid-name
 class Mqtt_Client(mqtt.Client):
@@ -50,6 +59,7 @@ class Mqtt_Client(mqtt.Client):
         self._queue = Queue()
         self.connected = False
         self.topics = []
+        self.subscribe_queue: dict = {}
         super().__init__(
             client_id=client_id,
             clean_session=clean_session,
@@ -82,7 +92,7 @@ class Mqtt_Client(mqtt.Client):
     # pylint: disable=unused-argument
     def __cb_on_connect(self, mqttc, obj, flags, rc):
         for topic in self.topics:
-            self.subscribe(topic, 0)
+            self.subscribe(topic, 1)
         self.connected = True
 
     def __cb_on_disconnect(self, mqttc, userdata, rc):
@@ -116,9 +126,23 @@ class Mqtt_Client(mqtt.Client):
         if not self.connected:
             logger.warning("publish: Not connected to MQTT Server.")
         return super().publish(topic=topic, payload=payload, qos=qos, retain=retain)
+    
+    def subscribe(self, topic, qos=0, options=None, properties=None):
+        result, mid =  super().subscribe(topic, qos, options, properties)
+        self.subscribe_queue[mid] = SubscriptionAtrributes(topic, qos=qos, options=options, properties=properties)
+        if result != mqtt.MQTT_ERR_SUCCESS:
+            logging.error("Unable to send subscription request mid: %s, topic: %s", str(mid), str(topic))
+        return (result, mid)
 
     def __cb_on_subscribe(self, mqttc, obj, mid, granted_qos):
         # logger.info("Subscribed: "+str(mid)+" "+str(granted_qos))
+        if mid in self.subscribe_queue.keys():
+            #self.subscribe_queue.pop(self.subscribe_queue.index(mid))
+            self.topics.append(self.subscribe_queue[mid])
+            del(self.subscribe_queue[mid])
+            logging.info("%s subscriptions pending.", str(len(self.subscribe_queue)))
+        else:
+            logger.error("This should not happen, received unknow subscription")
         pass
 
     def __cb_on_log(self, mqttc, obj, level, string):
@@ -142,6 +166,6 @@ class Mqtt_Client(mqtt.Client):
         if self.sslcontext and self._ssl_context is None:
             self.tls_set_context(self.sslcontext)
         self.connect(self.hostname, self.port, self.timeout)
-        self.topics = topics
+        self.topics.extend(topics)
         self.loop_start()
 # pylint: enable=invalid-name
