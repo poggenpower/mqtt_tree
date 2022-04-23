@@ -116,7 +116,7 @@ class Mqtt_Client(mqtt.Client):
         Queue message internally without distribute to MQTT.
         """
         msg = MQTTMessage(topic=topic.encode())
-        msg.payload = payload.encode()
+        msg.payload = payload.encode() if payload else None
         msg.qos = qos
         msg.retain = retain
         self._queue.put(msg)
@@ -124,9 +124,13 @@ class Mqtt_Client(mqtt.Client):
 
     def publish(self, topic, payload=None, qos=0, retain=False, properties=None):
         if not self.connected:
-            logger.warning("publish: Not connected to MQTT Server.")
+            logger.warning("publish: Not connected to MQTT Server. Try reconnection.")
+            try:
+                self.reconnect()
+            except TimeoutError as ter:
+                logger.exception("Mqtt_Client: Reconnect failed. Timeout {}".format(ter))
         return super().publish(topic=topic, payload=payload, qos=qos, retain=retain)
-    
+
     def subscribe(self, topic, qos=0, options=None, properties=None):
         result, mid =  super().subscribe(topic, qos, options, properties)
         self.subscribe_queue[mid] = SubscriptionAtrributes(topic, qos=qos, options=options, properties=properties)
@@ -143,7 +147,6 @@ class Mqtt_Client(mqtt.Client):
             logging.info("%s subscriptions pending.", str(len(self.subscribe_queue)))
         else:
             logger.error("This should not happen, received unknow subscription")
-        pass
 
     def __cb_on_log(self, mqttc, obj, level, string):
         logger.debug(f"Log: {string}")
