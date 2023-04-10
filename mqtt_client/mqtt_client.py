@@ -26,15 +26,15 @@ implementation of local needs.
 from queue import Queue
 import logging
 from dataclasses import dataclass
-from typing import Union
+from typing import Union, Optional
 import paho.mqtt.client as mqtt
 from paho.mqtt.client import MQTTMessage
 
 logger = logging.getLogger(__name__)
 
 @dataclass
-class SubscriptionAtrributes():
-    topic: Union[str, list[str]] = ""
+class SubscriptionAttributes():
+    topic: Union[str, list[str]]
     qos: int = 0
     options: Union[None, mqtt.SubscribeOptions] = None
     properties: Union[None, mqtt.Properties] = None
@@ -59,6 +59,7 @@ class Mqtt_Client(mqtt.Client):
         self._queue = Queue()
         self.connected = False
         self.topics = []
+        self.will_send_online = False
         self.subscribe_queue: dict = {}
         super().__init__(
             client_id=client_id,
@@ -94,6 +95,9 @@ class Mqtt_Client(mqtt.Client):
         for topic in self.topics:
             self.subscribe(topic, 1)
         self.connected = True
+        if len(self._will_topic) > 0 and self.will_send_online:
+            self.publish(self._will_topic.decode('utf-8'), payload="Online")
+        logger.info(f"Client {self._client_id} connected flags {flags} result code {rc}")
 
     def __cb_on_disconnect(self, mqttc, userdata, rc):
         self.connected = False
@@ -111,12 +115,12 @@ class Mqtt_Client(mqtt.Client):
     def __cb_on_publish(self, mqttc, obj, mid):
         pass
 
-    def private_publish(self, topic, payload=None, qos=0, retain=False):
+    def private_publish(self, topic, payload: Union[str, None]=None, qos=0, retain=False):
         """
         Queue message internally without distribute to MQTT.
         """
         msg = MQTTMessage(topic=topic.encode())
-        msg.payload = payload.encode() if payload else None
+        msg.payload = payload.encode() if isinstance(payload, str) else None # type: ignore
         msg.qos = qos
         msg.retain = retain
         self._queue.put(msg)
@@ -131,9 +135,9 @@ class Mqtt_Client(mqtt.Client):
                 logger.exception("Mqtt_Client: Reconnect failed. Timeout {}".format(ter))
         return super().publish(topic=topic, payload=payload, qos=qos, retain=retain)
 
-    def subscribe(self, topic, qos=0, options=None, properties=None):
+    def subscribe(self, topic: str, qos=0, options=None, properties=None):
         result, mid =  super().subscribe(topic, qos, options, properties)
-        self.subscribe_queue[mid] = SubscriptionAtrributes(topic, qos=qos, options=options, properties=properties)
+        self.subscribe_queue[mid] = SubscriptionAttributes(topic, qos=qos, options=options, properties=properties)
         if result != mqtt.MQTT_ERR_SUCCESS:
             logging.error("Unable to send subscription request mid: %s, topic: %s", str(mid), str(topic))
         return (result, mid)
@@ -146,7 +150,7 @@ class Mqtt_Client(mqtt.Client):
             del(self.subscribe_queue[mid])
             logging.info("%s subscriptions pending.", str(len(self.subscribe_queue)))
         else:
-            logger.error("This should not happen, received unknow subscription")
+            logger.error("This should not happen, received unknown subscription")
 
     def __cb_on_log(self, mqttc, obj, level, string):
         logger.debug(f"Log: {string}")
@@ -169,6 +173,8 @@ class Mqtt_Client(mqtt.Client):
         if self.sslcontext and self._ssl_context is None:
             self.tls_set_context(self.sslcontext)
         self.connect(self.hostname, self.port, self.timeout)
-        self.topics.extend(topics)
+        for topic in topics:
+            topic = topic if isinstance(topic, SubscriptionAttributes) else SubscriptionAttributes(topic)
+            self.topics.append(topics)
         self.loop_start()
 # pylint: enable=invalid-name
