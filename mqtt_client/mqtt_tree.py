@@ -1,19 +1,21 @@
 import os
-from  . import mqtt_client
+from . import mqtt_client
 from . import tk_tree
 import threading
 import ssl
 import sys
 import logging
+
 logger = logging.getLogger(__name__)
 
-class mqtt_path_element():
+
+class mqtt_path_element:
     TYPE_BRANCH = 1
     TYPE_LEAF = 2
 
     def __init__(self, name, tree_id=None, ptype=0):
         self.children = dict()
-        self.nane = 'unknown'
+        self.nane = "unknown"
         self.name = name
         self.tree_id = tree_id
         self.type = ptype
@@ -51,21 +53,22 @@ def read_mqtt_q(q, mqtt_root, app):
             break
         # print("woring on topic: {}".format(msg.topic))
         mqtt_path = msg.topic
-        mqtt_path_split = mqtt_path.split('/')
+        mqtt_path_split = mqtt_path.split("/")
         i = 0
         parent = mqtt_root
         for element in mqtt_path_split:
             i += 1
             if not parent.is_child(element):
-                if parent.name == 'root':
+                if parent.name == "root":
                     id = app.tree_insert("", "end", None, text=element)
                 else:
                     if i >= len(mqtt_path_split):
                         id = app.tree_insert(
                             parent.tree_id,
-                            "end", None,
+                            "end",
+                            None,
                             text=element,
-                            values=(msg.qos, msg.retain, msg.payload)
+                            values=(msg.qos, msg.retain, msg.payload),
                         )
                     else:
                         id = app.tree_insert(parent.tree_id, "end", None, text=element)
@@ -83,45 +86,54 @@ def read_mqtt_q(q, mqtt_root, app):
 
 def print_topics(root, level):
     for child in root.get_children():
-        print('  ' * level + child.name)
+        print("  " * level + child.name)
         print_topics(child, level + 1)
+
 
 def main():
     handler = logging.StreamHandler(sys.stdout)
-    logging.basicConfig(handlers=[handler, ], level=logging.DEBUG, format='%(asctime)s %(message)s')
+    logging.basicConfig(
+        handlers=[
+            handler,
+        ],
+        level=logging.DEBUG,
+        format="%(asctime)s %(message)s",
+    )
     logger = logging.getLogger()
 
     try:
         sys.path.append(os.getcwd())
         import config
     except ImportError:
-        logger.error("You need to place a 'config.py' in the current directory. With a config similar to 'config.py.example'.")
+        logger.error(
+            "You need to place a 'config.py' in the current directory. With a config similar to 'config.py.example'."
+        )
         sys.exit(1)
     conf = config.conf
 
     sslcontext = None
-    if conf.get('ssl'):
+    if conf.get("ssl"):
         sslcontext = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
         sslcontext.load_cert_chain(
-            certfile=conf.get('certfile', ''),
-            keyfile=conf.get('keyfile'),
-            password=conf.get('password'),
+            certfile=conf.get("certfile", ""),
+            keyfile=conf.get("keyfile"),
+            password=conf.get("password"),
         )
     # (password=XXX) givs pw for keyfiles. Key can be in the CA file, but first.
 
     mc = mqtt_client.Mqtt_Client("mqtt_tree")
-    mc.configure(conf.get('mqtt_server'), conf.get('mqtt_port'), sslcontext=sslcontext)
+    mc.configure(conf.get("mqtt_server"), conf.get("mqtt_port"), sslcontext=sslcontext)
     q = mc.get_queue()
-    mc.run('#')
+    mc.run("#")
 
     app = tk_tree.TK_Tree()
 
     print("Queuesize: {}".format(q.qsize()))
-    mqtt_root = mqtt_path_element('root')
-    print('Root Element created')
+    mqtt_root = mqtt_path_element("root")
+    print("Root Element created")
     # read_mqtt_q(q, mqtt_root, app)
     receive_thread = threading.Thread(target=read_mqtt_q, args=(q, mqtt_root, app))
-    print('Starting MQTT event processing in the background')
+    print("Starting MQTT event processing in the background")
     receive_thread.start()
 
     app.run()
@@ -130,7 +142,8 @@ def main():
     q.put(False)  # Stop Threat
     print_topics(mqtt_root, 1)
 
-    print('########################################################################')
+    print("########################################################################")
+
 
 if __name__ == "__main__":
     main()

@@ -21,10 +21,8 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     python_requires=">=3.7",
-    packages=['mqtt_client'],
-    install_requires=[ "paho-mqtt>=1.5.1" ],
-    tests_require=['pytest'],
-    entry_points={
-        'console_scripts': ['mqtt_tree=mqtt_client.mqtt_tree:main']
-    }
+    packages=["mqtt_client"],
+    install_requires=["paho-mqtt>=1.5.1"],
+    tests_require=["pytest"],
+    entry_points={"console_scripts": ["mqtt_tree=mqtt_client.mqtt_tree:main"]},
 )

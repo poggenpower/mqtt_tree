@@ -32,12 +32,14 @@ from paho.mqtt.client import MQTTMessage
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
-class SubscriptionAttributes():
+class SubscriptionAttributes:
     topic: Union[str, list[str]]
     qos: int = 0
     options: Union[None, mqtt.SubscribeOptions] = None
     properties: Union[None, mqtt.Properties] = None
+
 
 # pylint: disable=invalid-name
 class Mqtt_Client(mqtt.Client):
@@ -50,11 +52,12 @@ class Mqtt_Client(mqtt.Client):
     """
 
     def __init__(
-        self, client_id="",
+        self,
+        client_id="",
         clean_session=True,
         userdata=None,
         protocol=mqtt.MQTTv311,
-        transport="tcp"
+        transport="tcp",
     ):
         self._queue = Queue()
         self.connected = False
@@ -66,7 +69,7 @@ class Mqtt_Client(mqtt.Client):
             clean_session=clean_session,
             userdata=userdata,
             protocol=protocol,
-            transport=transport
+            transport=transport,
         )
         self.on_connect = self.__cb_on_connect
         self.on_disconnect = self.__cb_on_disconnect
@@ -76,7 +79,7 @@ class Mqtt_Client(mqtt.Client):
         self.on_subscribe = self.__cb_on_subscribe
 
     def configure(self, hostname, port, timeout=60, sslcontext=None):
-        """ create an ssl context like this:
+        """create an ssl context like this:
         import ssl
         context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
         context.load_cert_chain(certfile="../code2/codeschloss.home.schmu.net.crt",
@@ -96,8 +99,10 @@ class Mqtt_Client(mqtt.Client):
             self.subscribe(topic, 1)
         self.connected = True
         if len(self._will_topic) > 0 and self.will_send_online:
-            self.publish(self._will_topic.decode('utf-8'), payload="Online")
-        logger.info(f"Client {self._client_id} connected flags {flags} result code {rc}")
+            self.publish(self._will_topic.decode("utf-8"), payload="Online")
+        logger.info(
+            f"Client {self._client_id} connected flags {flags} result code {rc}"
+        )
 
     def __cb_on_disconnect(self, mqttc, userdata, rc):
         self.connected = False
@@ -106,25 +111,28 @@ class Mqtt_Client(mqtt.Client):
             try:
                 self.reconnect()
             except TimeoutError as ter:
-                logger.exception("Mqtt_Client: Reconnect failed. Timeout {}".format(ter))
+                logger.exception(
+                    "Mqtt_Client: Reconnect failed. Timeout {}".format(ter)
+                )
 
     def __cb_on_message(self, mqttc, obj, msg):
-        #logger.info(msg.topic+" "+str(msg.qos)+" "+str(msg.payload))
+        # logger.info(msg.topic+" "+str(msg.qos)+" "+str(msg.payload))
         self._queue.put(msg)
 
     def __cb_on_publish(self, mqttc, obj, mid):
         pass
 
-    def private_publish(self, topic, payload: Union[str, None]=None, qos=0, retain=False):
+    def private_publish(
+        self, topic, payload: Union[str, None] = None, qos=0, retain=False
+    ):
         """
         Queue message internally without distribute to MQTT.
         """
         msg = MQTTMessage(topic=topic.encode())
-        msg.payload = payload.encode() if isinstance(payload, str) else None # type: ignore
+        msg.payload = payload.encode() if isinstance(payload, str) else None  # type: ignore
         msg.qos = qos
         msg.retain = retain
         self._queue.put(msg)
-
 
     def publish(self, topic, payload=None, qos=0, retain=False, properties=None):
         if not self.connected:
@@ -132,22 +140,30 @@ class Mqtt_Client(mqtt.Client):
             try:
                 self.reconnect()
             except TimeoutError as ter:
-                logger.exception("Mqtt_Client: Reconnect failed. Timeout {}".format(ter))
+                logger.exception(
+                    "Mqtt_Client: Reconnect failed. Timeout {}".format(ter)
+                )
         return super().publish(topic=topic, payload=payload, qos=qos, retain=retain)
 
     def subscribe(self, topic: str, qos=0, options=None, properties=None):
-        result, mid =  super().subscribe(topic, qos, options, properties)
-        self.subscribe_queue[mid] = SubscriptionAttributes(topic, qos=qos, options=options, properties=properties)
+        result, mid = super().subscribe(topic, qos, options, properties)
+        self.subscribe_queue[mid] = SubscriptionAttributes(
+            topic, qos=qos, options=options, properties=properties
+        )
         if result != mqtt.MQTT_ERR_SUCCESS:
-            logging.error("Unable to send subscription request mid: %s, topic: %s", str(mid), str(topic))
+            logging.error(
+                "Unable to send subscription request mid: %s, topic: %s",
+                str(mid),
+                str(topic),
+            )
         return (result, mid)
 
     def __cb_on_subscribe(self, mqttc, obj, mid, granted_qos):
         # logger.info("Subscribed: "+str(mid)+" "+str(granted_qos))
         if mid in self.subscribe_queue.keys():
-            #self.subscribe_queue.pop(self.subscribe_queue.index(mid))
+            # self.subscribe_queue.pop(self.subscribe_queue.index(mid))
             self.topics.append(self.subscribe_queue[mid])
-            del(self.subscribe_queue[mid])
+            del self.subscribe_queue[mid]
             logging.info("%s subscriptions pending.", str(len(self.subscribe_queue)))
         else:
             logger.error("This should not happen, received unknown subscription")
@@ -169,12 +185,20 @@ class Mqtt_Client(mqtt.Client):
         logger.debug("run")
         if not self.hostname:
             logger.error("Hostname and Port missing, can't start")
-            raise AttributeError("Hostname and Port need to be configured. all .configure()")
+            raise AttributeError(
+                "Hostname and Port need to be configured. all .configure()"
+            )
         if self.sslcontext and self._ssl_context is None:
             self.tls_set_context(self.sslcontext)
         self.connect(self.hostname, self.port, self.timeout)
         for topic in topics:
-            topic = topic if isinstance(topic, SubscriptionAttributes) else SubscriptionAttributes(topic)
+            topic = (
+                topic
+                if isinstance(topic, SubscriptionAttributes)
+                else SubscriptionAttributes(topic)
+            )
             self.topics.append(topics)
         self.loop_start()
+
+
 # pylint: enable=invalid-name
