@@ -18,8 +18,11 @@
         }
     ],
     "python.testing.pytestArgs": [
-        "."
+        "/workspaces/mqtt_tree/tests"
     ],
     "python.testing.unittestEnabled": false,
-    "python.testing.pytestEnabled": true
+    "python.testing.pytestEnabled": true,
+    "cSpell.words": [
+        "userdata"
+    ]
 }

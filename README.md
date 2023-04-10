@@ -2,13 +2,13 @@
 
 ## mqtt_client
 Wrapepr around paho/mqtt_client to easier handle certifacte based authentication and connection to mqtt via a python queue.
-I use this wrapper in serveral internal projects to simplify the handling. 
+I use this wrapper in serveral internal projects to simplify the handling.
 
-## mqtt_tree 
+## mqtt_tree
 As I didn't found a light wight way to keep an overview of all topic published from various devices I wrote a small python UI.
 If installed as package (see installation)
 It gets installed as `mqtt_tree`.
-Make sure you have a config in the current working directory. 
+Make sure you have a config in the current working directory.
 
 ## change log
 2021=01-31 BREAKING Change: moved files to create a python package; Version 0.1.1
@@ -41,7 +41,7 @@ Feedback, Issues, Suggestions, Improvements, Forks all welcome. Use the Issue tr
 
 ## Todo / Know Issues
 * allow ssl without client certificate
-* grey out non retaining topics after a while. 
+* grey out non retaining topics after a while.
 
 ##### Hidden Features ;-)
 
