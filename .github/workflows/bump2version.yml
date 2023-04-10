@@ -26,5 +26,6 @@ jobs:
         files: setup.py
         commit_name: bump2version
         commit_email: git-bot-mqtt@schmu.net
+        login: poggenpower
         token: "${{ secrets.GITHUB_TOKEN }}"
 
