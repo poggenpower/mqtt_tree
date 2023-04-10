@@ -26,5 +26,5 @@ jobs:
         files: setup.py
         commit_name: bump2version
         commit_email: git-bot-mqtt@schmu.net
-        token: "${{ secrets.GIT_TOKEN }}"
+        token: "${{ secrets.GITHUB_TOKEN }}"
 
