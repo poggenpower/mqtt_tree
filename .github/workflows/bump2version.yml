@@ -1,0 +1,30 @@
+name: Bump version workflow
+
+on:
+  push:
+    branches:
+    - main
+    paths-ignore:
+    - setup.py
+
+jobs:
+  bump-version:
+    name: Bump package version
+    if: "!contains(github.event.head_commit.message, 'Bump version')"
+    runs-on: ubuntu-20.04
+    steps:
+    - name: actions/checkout
+      uses: actions/checkout@v2
+      with:
+          persist-credentials: false
+    - name: current_version
+      run: echo "current_version=$(grep 'version' setup.py | cut -d '=' -f2)" >> $GITHUB_ENV
+    - name: FragileTech/bump-version
+      uses: FragileTech/bump-version@main
+      with:
+        current_version: "${{ env.current_version }}"
+        files: setup.py
+        commit_name: bump2version
+        commit_email: git-bot-mqtt@schmu.net
+        token: "${{ secrets.GIT_TOKEN }}"
+
