@@ -45,6 +45,29 @@ def test_subscribe(get_mqtt_client: mqtt_client.Mqtt_Client):
     assert subscript_attr in get_mqtt_client.topics
 
 
+def test_multi_subscribe_run():
+    new_mc = mqtt_client.Mqtt_Client("LWT_test")
+    sslcontext = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+    sslcontext.load_cert_chain(
+        certfile=conf.get("certfile", ""),
+        keyfile=conf.get("keyfile"),
+        password=conf.get("password"),
+    )
+    new_mc.configure(
+        conf.get("mqtt_server"), conf.get("mqtt_port"), sslcontext=sslcontext
+    )
+    subscription_counter = 0
+
+    def __cb_on_subscribe(client, userdata, mid, granted_qos):
+        nonlocal subscription_counter
+        subscription_counter += 1
+
+    new_mc.on_subscribe = __cb_on_subscribe
+    new_mc.run("Notifier/A", "Notifier/B", "Notifier/C")
+    time.sleep(1)
+    assert subscription_counter == 3
+
+
 def test_publish(get_mqtt_client: mqtt_client.Mqtt_Client):
     test_topic = "Notifier/test"
     payload = "Some Thing"
@@ -62,7 +85,7 @@ def test_publish(get_mqtt_client: mqtt_client.Mqtt_Client):
 
 
 def test_lwt(get_mqtt_client: mqtt_client.Mqtt_Client):
-    """Crating two connections. One to monitor Last Will from the other.
+    """Creating two connections. One to monitor Last Will from the other.
     "LWT_test" is the additional created connection, that gets created and
     reports online and offline to "code/status/connection"
 

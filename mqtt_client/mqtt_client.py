@@ -96,7 +96,7 @@ class Mqtt_Client(mqtt.Client):
     # pylint: disable=unused-argument
     def __cb_on_connect(self, mqttc, obj, flags, rc):
         for topic in self.topics:
-            self.subscribe(topic, 1)
+            self.subscribe(topic.topic, topic.qos)
         self.connected = True
         if len(self._will_topic) > 0 and self.will_send_online:
             self.publish(self._will_topic.decode("utf-8"), payload="Online")
@@ -197,7 +197,7 @@ class Mqtt_Client(mqtt.Client):
                 if isinstance(topic, SubscriptionAttributes)
                 else SubscriptionAttributes(topic)
             )
-            self.topics.append(topics)
+            self.topics.append(topic)
         self.loop_start()
 
 
