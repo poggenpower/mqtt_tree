@@ -28,4 +28,3 @@ jobs:
         commit_email: git-bot-mqtt@schmu.net
         login: poggenpower
         token: "${{ secrets.GITHUB_TOKEN }}"
-
