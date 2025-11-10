@@ -26,7 +26,7 @@ implementation of local needs.
 from queue import Queue
 import logging
 from dataclasses import dataclass
-from typing import Union, Optional
+from typing import Literal, Union, Optional
 import paho.mqtt.client as mqtt
 from paho.mqtt.client import MQTTMessage
 
@@ -145,7 +145,7 @@ class Mqtt_Client(mqtt.Client):
                 )
         return super().publish(topic=topic, payload=payload, qos=qos, retain=retain)
 
-    def subscribe(self, topic: str, qos=0, options=None, properties=None):
+    def subscribe(self, topic: str, qos=0, options=None, properties=None) -> tuple[Optional[Literal[4, 0]], Optional[int]]: # type: ignore
         result, mid = super().subscribe(topic, qos, options, properties)
         self.subscribe_queue[mid] = SubscriptionAttributes(
             topic, qos=qos, options=options, properties=properties
@@ -162,7 +162,8 @@ class Mqtt_Client(mqtt.Client):
         # logger.info("Subscribed: "+str(mid)+" "+str(granted_qos))
         if mid in self.subscribe_queue.keys():
             # self.subscribe_queue.pop(self.subscribe_queue.index(mid))
-            self.topics.append(self.subscribe_queue[mid])
+            if not self.subscribe_queue[mid] in self.topics:
+                self.topics.append(self.subscribe_queue[mid])
             del self.subscribe_queue[mid]
             logging.info("%s subscriptions pending.", str(len(self.subscribe_queue)))
         else:
